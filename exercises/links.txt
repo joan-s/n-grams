@@ -1,0 +1,77 @@
+https://github.com/jbhoosreddy/spellcorrect
+
+--------------------
+
+
+https://www.cs.upc.edu/~nlp/wikicorpus/
+
+conte 120 Million Word Spanish Corpus pero tambe 50 million words catala. El primer surt al kaggle 
+
+https://www.kaggle.com/code/rtatman/tutorial-getting-n-grams/notebook
+
+juntament amb un codi per filtrar coses i obtenir tokens, basat en nltk. Tamb amb nltk obte ngrams facilment, fent servir una funcio nlgrams(). Pero no genera text. Un comentari diu que no treballa amb setences.
+
+-------------------
+
+https://nlpforhackers.io/language-models/
+
+genera text amb nltk a partir d'un corpus de reuters. el codi es una mica complicat.
+
+-------------------
+
+https://www.depends-on-the-definition.com/introduction-n-gram-language-models/
+
+genera text fent servir nomes Collections, codi molt senzill i elegant. llegeix unes receptes en alemany en json (d'on?) De Spacy fa servir un pipe per obtenir tokens. Tambe sembla que n'hi hagi per catala ca_core_news_sm i _md
+
+-------------------
+
+https://www.nltk.org/book/ch02.html
+
+punt 2.4 creating text from bigrams. abans explica els corpora de l'nltk.
+
+-------------------
+
+Explicacio dels corpora de nltk per defecte https://www.nltk.org/book/ch02.html
+
+https://www.gutenberg.org/browse/languages/ca
+
+< 50 llibres en catala, que igual que Emma, Persuasion es poden fer servir per crear un LM amb nltk
+nltk.corpus.gutenberg.words(fileids='austen-emma.txt') com es diu aqui https://www.nltk.org/howto/corpus.html#plaintext-corpora
+
+aqui com fer per carregar textos en catala
+https://xwiki.recursos.uoc.edu/wiki/matm21564es/view/test/
+https://xwiki.recursos.uoc.edu/wiki/matm21564ca/view/4.%20An%C3%A0lisi%20textual%20i%20processament%20de%20corpus/
+
+aqui el mateix pero amb els codis tambe
+https://sites.google.com/view/programacio-en-python/home/3-natural-language-toolkit-nltk en catala
+
+----------
+
+https://www.geeksforgeeks.org/n-gram-language-modelling-with-nltk/
+https://www.nltk.org/api/nltk.lm.html
+
+---------------
+
+
+spell check
+
+https://github.com/jonmartz/NLP2
+https://github.com/shresthasumit55/SpellCorrector
+
+-----------------
+
+feed forward NLM
+
+https://abhinavcreed13.github.io/blog/bengio-trigram-nplm-using-pytorch/
+https://github.com/jinmang2/NPLM
+https://neptune.ai/blog/word-embeddings-guide + jupyter https://colab.research.google.com/drive/12TQ4CmY6jUnFlQZFnKenmKL3UdTkcatx?usp=sharing
+
+
+
+
+
+
+
+
+
+
