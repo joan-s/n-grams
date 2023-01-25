@@ -20,15 +20,11 @@ NLP course, 2022-23
 References
 ===
 
-*Speech and Language Processing* (3rd ed. draft) Dan Jurafsky, James H. Martin. https://web.stanford.edu/~jurafsky/slp3/.
+*Speech and Language Processing*. 3rd ed. draft Jan 2023. Dan Jurafsky, James H. Martin. https://web.stanford.edu/~jurafsky/slp3/.
 
-- Chapter 3 : N-gram language models
-- Appendix B : Spelling correction and the noisy channel
- 
-
-Reading:
-
-*A Neural Probabilistic Language Model*. Yoshua Bengio et al. Journal of Machine Learning Research, No. 3 (2003) https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf
+- Chapter 3 : *N-gram language models*
+- Chapter 7 : *Neural language models*, only sections 7.3, 7.5 and 7.6.1
+- Appendix B : *Spelling correction and the noisy channel*
 
 ---
 
@@ -41,8 +37,8 @@ Outline
 1. Problems and solutions
     - sparsity, unknown words
     - smoothing and backoff
-1. The first neural LM
-1. An application of $n$-grams: word spelling
+1. A feed-forward neural LM
+1. An application of $n$-grams: spelling correction
 
 ---
 
@@ -50,18 +46,22 @@ Plan
 ===
 
 - Day 1, 2h : theory (these slides)
-- Homework : prepare exercises
+- Homework : study and start solving the exercises
 - Day 2, 2h : exercises, implement 
-  - $n$-gram LM, 
-  - simple bi-gram speller
-  - neural LM
+  - text generation with a $n$-gram LM
+  - with a neural LM
+  - "real-words" spelling correction
 
-<!--
-- *Why should I do the exercises ?*
-  - then, no questions on this topic in the exam
-  - exercises assessed *in situ*, attendance is compulsory
-  - up to +1 point to be added to exam points
--->
+---
+
+"real-words" spelling correction
+
+  >Emma Woodhouse, <font color="red">hand some</font>, clever, and rich, with a comfortable home <font color="red">an</font> happy disposition, seemed to <font color="red">unit</font> some of the best blessings of existence; and 
+  <font color="red">hat</font> lived nearly twenty-one years in the world with very little <font color="red">too</font> distress or vex her. 
+
+  >Emma Woodhouse, <font color="blue">handsome</font>, clever, and rich, with a comfortable home <font color="blue">and</font> happy disposition, seemed to <font color="blue">unite</font> some of the best blessings of existence; and <font color="blue">had</font> lived nearly twenty-one years in the world with very little <font color="blue">to</font> distress or vex 
+  her. 
+  **Emma, Jane Austin**
 
 ---
 
@@ -84,19 +84,18 @@ $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text
 
 ---
 
-**Applications**
+## Applications
 
 - Spell checking : 
   $$\ldots {\text{\tt How's the \red{wether} like}}\ldots \rightarrow \\ \underset{w \in V}{\argmax} \; P({\text{\tt How's the }}w{\text{\tt ~like}}) = {\text{\tt weather}}$$
 
-  ${\ldots \text{\tt How's the like} \ldots}$
-
+  
 - Speech recognition, we want 
   $$P({\text{\tt recognize speech}}) > P({\text{\tt break a nice beach}})$$
 
 ---
 
-- Machine translation :
+- Machine translation : Chinese $\rightarrow$ English
 
   ![](xines.png) 
 
@@ -113,9 +112,8 @@ $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text
 
   ![height:400](whatsapp.png)
 
-  <br>
 
-  $\text{SortDescending}_{P(w \; | \; \text{\tt It's})}\;\{ w \in V \}, \; V \; \text{vocabulary}$
+  Sort by $w \in V$ descending $P(w \; | \; \text{\tt meet you at the})$ and show top-3 words
 
 ---
 
@@ -126,22 +124,22 @@ $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text
 
   <br>
 
-  $X \sim P(X)$ means aleatory variable $X$ follows distribution $P(X)$
+  $x \sim P(x)$ means aleatory variable $x$ follows distribution $P(x)$
 
 ---
 
 ## Goal
 
-### Let $w_1, w_2 \ldots w_n$ be a sequence of words. How to compute or estimate $P(w_1, w_2 \ldots w_n)$ and $P(w_k | w_1 \ldots w_{k-1})$ ?
+### Let $w_1 w_2 \ldots w_k$ be a sequence of words. How to compute or estimate $P(w_1 w_2 \ldots w_k)$ and $P(w_k | w_1 \ldots w_{k-1})$ ?
 
 Naive solution:
 
 1. take a large corpus
-1. count occurrences of our sequence, $C(w_1, w_2 \ldots w_n)$
+1. count occurrences of our sequence, $C(w_1 w_2 \ldots w_k)$
 1. divide by total number of sequences of length $n$ in the corpus
 
 **Problems**:
-- maybe $w_1, w_2 \ldots w_n$ doesn't exist in the corpus, almost surely if $n$ large
+- maybe $w_1 w_2 \ldots w_n$ doesn't exist in the corpus, almost surely if $n$ large
 - even if it exists, the corpus may not be large enough $\rightarrow$ probability not reliable
 
 ---
@@ -150,18 +148,18 @@ Naive solution:
 
 By the chain rule of probability
 $$\begin{aligned}
-  P(w_1, w_2 \ldots w_n) &= P(w_1) \, P(w_2 | w_1) \, P(w_3 | w_1, w_2) \, \ldots \, P(w_n | w_1 \ldots w_{n-1})\\ &= \prod_{k=1}^n P(w_k | w_1 \ldots w_{k-1})
+  P(w_1, w_2 \ldots w_k) &= P(w_1) \, P(w_2 | w_1) \, P(w_3 | w_1, w_2) \, \ldots \, P(w_k | w_1 \ldots w_{k-1})\\ &= \prod_{i=1}^k P(w_i | w_1 \ldots w_{i-1})
   \end{aligned}
 $$
 
-Markov assumption: conditional probabilities depend only on the $N+1$ past words
-$$P(w_k | w_1 \ldots w_{k-1}) = P(w_k | w_{k-1} \ldots w_{k-N+1})$$
+Markov assumption: conditional probabilities depend only on the $n+1$ past words
+$$P(w_k | w_1 \ldots w_{k-1}) = P(w_k | w_{k-1} \ldots w_{k-n+1})$$
 
-If $N=2$, only previous word matters: 
-$$P(w_1, w_2 \ldots w_n) = P(w_1)\,P(w_2|w_1)\,P(w_3|w_2) \ldots P(w_n | w_{n-1})$$
+If $n=2$, only previous word matters: 
+$$P(w_1, w_2 \ldots w_k) = P(w_1)\,P(w_2|w_1)\,P(w_3|w_2) \ldots P(w_k | w_{k-1})$$
 
 
-<span style="color:blue">Do you think the approximation is reasonable ? Which is the best $N$ ?</span>
+<span style="color:blue">Do you think the approximation is reasonable ? Which is the best $n$ ?</span>
 
 ---
 
@@ -170,6 +168,7 @@ $n$-grams
 ===
 
 >*En una bella plana per on passava una bella aigua estaven gran res de besties selvatges qui volien elegir rei. Acord fo pres per la major part que el lleó fos rei. Més lo bou contrastava molt fortment a aquella elecció, i digué estes paraules*
+Llibre de les bèsties, Ramon Llull, 1289
 
 Unigrams : ``En``, ``una``, ``bella``, ``plana`` ... ``paraules``
 
@@ -178,16 +177,18 @@ Bigrams : ``En una``, ``una bella``, ``bella plana`` ... ``digué estes``, ``est
 Trigrams : ``En una bella``, ``una bella plana``,  ... ``digué estes paraules``
 
 
-An $n$-gram is a sequence of $n$ consecutive words. Their frequencies will be useful to compute the probabilities of a LM.
+A $n$-gram is a sequence of $n$ consecutive words. Their frequencies will be useful to compute the probabilities of a LM.
 
 ---
 
-Now you can compute the conditional $\Rightarrow$ also the joint probability just by **counting $n$-grams**. For $N=2$, **bigrams**
+Now you can compute the conditional $\Rightarrow$ also the joint probability just by **counting 
+n-grams**. For $n=2$, **bigrams**
 
 $$\begin{aligned}
-  P(w_k) &= \displaystyle\frac{C(w_k)}{S} \\
   P(w_k | w_{k-1}) &= \displaystyle\frac{C(w_{k-1} w_k)}{\sum_{w \in V} C(w_{k-1} w)} = \displaystyle\frac{C(w_{k-1} w_k)}{C(w_{k-1})} \\
-  P(w_{k-1} w_k) &= P(w_k | w_{k-1}) P(w_{k-1})
+  \\
+  P(w_{k-1} w_k) &= P(w_k | w_{k-1}) P(w_{k-1}) \;\; , \;\;
+  P(w_k) = \displaystyle\frac{C(w_k)}{S}
   \end{aligned}
 $$
 
@@ -198,7 +199,7 @@ Why is this better ? It's much more probable than we can find all the $w_{k-1} w
 
 <br>
 
-<span style="color:blue">Write the equations for $N=3$ and for the general case $N \geq 2$</span>
+<span style="color:blue">Write the equations for $n=3$ and for the general case $n \geq 2$</span>
 
 ---
 
@@ -209,7 +210,7 @@ We need to augment the vocabulary $V$ with special words
 ``<s>`` = beginning of sentence
 ``</s>`` = end of sentence
 
-Now we can make a bigram with the first word, and the set of all sentences has a proper probability distribution.
+Now we can make a bigram with the first word of a sentence, and the set of all sentences has a proper probability distribution.
 
 $$\begin{aligned}
 &C(\text{{\tt En}} \;|\; \text{{\tt <s>}}) = 1 \\
@@ -226,28 +227,28 @@ Caution: $C(w)$ is *not* the number of unigrams = occurrences of $w$ but the num
 
 - In practice it's better to use trigrams, 4-grams than bigrams. <span style="color:blue">Why ?</span>
 
-- For trigrams you need to do like $P(\text{{\tt restaurant}} \,|\, \text{{\tt <s><s>}})$ = prob. ``restaurant`` is first word of a sentence, etc.
+- For trigrams you need to do like $P(\text{{\tt restaurant}} \,|\, \text{{\tt <s><s>}})$ = probability that $\tt{restaurant}$ is first word of a sentence, etc.
 
 - Because of possibility of underflow (large $n$, large corpus), instead of
 
-  $$P(w_1) \, P(w_2 | w_1) \, P(w_3 | w_1, w_2) \, \ldots \, P(w_n | w_1 \ldots w_{n-1})$$
+  $$P(w_2 | w_1) \, P(w_3 | w_2) \, \ldots \, P(w_n | w_{n-1})$$
 
   compute
 
-  $$\exp\Big(\log P(w_1) + \log P(w_2 | w_1) + \log P(w_3 | w_1, w_2) + \ldots log P(w_n | w_1 \ldots w_{n-1})\Big)$$
+  $$\exp\Big(\log P(w_2 | w_1) + \log P(w_3 | w_2) + \ldots \log P(w_n | w_{n-1})\Big)$$
 
 <br>
 
-<span style="color:blue">Compute $P(\text{{\tt una bella}})$ from the text above</span>
+<span style="color:blue">Compute $P(\text{{\tt una bella}})$ in the text above</span>
 
 ---
 
 $n$-grams was one of the first takes of statistical NLP at building language models. 
 
-- 1948 first mention of $n$-grams by [Claude Shannon]https://en.wikipedia.org/wiki/Claude_Shannon)
+- 1948 first mention of $n$-grams by [Claude Shannon](https://en.wikipedia.org/wiki/Claude_Shannon)
 - 80s$-$ 00s $n$-grams, rule-based systems for NLP
 - 90s$-$ recurrent NNs like [LSTM](https://en.wikipedia.org/wiki/Long_short-term_memory)
-- 2003 Bengio et al. the first feed-forward neural LM
+- 2003 Bengio et al. feed-forward neural LM
 - 2010s **rise in computer power and data**
 - 2012$-$ computer vision taken by storm by deep learning $\rightarrow$ NLP
 - 2017$-$ attention models, transformer architectures which perform MUCH better
@@ -259,12 +260,12 @@ $n$-grams was one of the first takes of statistical NLP at building language mod
 
 So, why study $n$-grams ?
 
-- learn a *simple* approach
+- learn a *simple* approach to build a LM
 - pre-deep learning era 
 - realize what were the problems that lead to *neural* LMs
-- introduce LMs applications
-- introduce the metric *perplexity* to assess LMs
+- introduce LM applications
 - we'll compare in the exercise a simple version of the two approaches
+- and implement a type of spelling checker
 
 ---
 
@@ -288,7 +289,7 @@ Problems and solutions
 
 ## The $n$
 
-- the larger the context size $N$ the better the $n$-grams LM is : more coherent sentences are generated
+- the larger the context size $n$ the better the $n$-grams LM is : more coherent sentences are generated
 - but in the same domain of training corpus (eg. English in Shakespeare $\neq$ English in Wall Street Journal)
 - Shakespeare complete works corpus: 884,647 words, vocabulary 29,066 words
 
@@ -301,9 +302,9 @@ credits: Juravsky
 
 ---
 
-The problem of large $N$ is 
+The problem of large $n$ is 
 
-- ratio of actual vs possible $n$-grams tends to 0 : $3e5$ found 4-grams vs $V^4 = 7e17$ possible 4-grams
+- ratio of actual vs possible $n$-grams tends to zero : $3e5$ found 4-grams vs $V^4 = 7e17$ possible 4-grams
 - *It can not be but* $\rightarrow$  *that* | *I* | *he* | *thou* | *so*
 - for most 4-grams there is only 1 continuation possible
 - generated text is *literally* Shakespeare
@@ -315,8 +316,7 @@ Recall : the idea of LM with $n$-grams is to compute probabilities just by **cou
 
 $$\begin{aligned}
   P(w_k | w_{k-1}) &= \displaystyle\frac{C(w_{k-1} w_k)}{\sum_{w \in V} C(w_{k-1} w)} = \displaystyle\frac{C(w_{k-1} w_k)}{C(w_{k-1})} \\
-  P(w_{k-1} w_k) &= P(w_k | w_{k-1}) P(w_{k-1}) \\
-  P(w_k) &= \displaystyle\frac{C(w_k)}{S}
+  P(w_{k-1} w_k) &= P(w_k | w_{k-1}) P(w_{k-1}) \;\; , \;\; P(w_k) = \displaystyle\frac{C(w_k)}{S}
   \end{aligned}
 $$
 
@@ -351,7 +351,7 @@ $$|V| \; \text{size of the vocabulary}$$
 
 #### Backoff
 
-Alternatively, if we want $P(w_k | w_{k-2}, w_{k-1})$ and there are no trigrams $w_{k-2} w_{k-1} w_k$, resort to $P(w_k | w_{k-1})$.
+**A different solution**, if we want $P(w_k | w_{k-2}, w_{k-1})$ and there are no trigrams $w_{k-2} w_{k-1} w_k$, resort to $P(w_k | w_{k-1})$.
 
 If there are not bigrams $w_{k-1} w_k$, resort to $P(w_k)$
 
@@ -377,17 +377,8 @@ $S$ and not $P$ because again does not produce a probability distribution, but w
 
 ---
 
-Evaluation of LM : perplexity
-===
-
-TODO: no em sembla interessant ni aplicable, al final es una formula
-
----
-
 Feed forward neural LM
 ===
-
-TODO: acabar-ho
 
 ![](nlm1.png)
 
@@ -400,7 +391,7 @@ TODO: acabar-ho
 Spell checking
 ===
 
-![height:400](spell_check.png)
+![height:400](spell_check.png) **impotent ?!**
 
 Frequency of spelling errors vary 
 - from 1-2% for carefully retyping already printed text 
@@ -428,7 +419,7 @@ Frequency of spelling errors vary
 
 Strategy for non-word errors:
 
-- find words $w_1 \ldots w_n$ not in the vocabulary
+- find words $w_1, w_2, \ldots w_k$ not in the vocabulary
 - for each $w_i$ 
   - find the words in the vocabulary at a Levenshtein$^1$ distance $\leq 1$ 
   - **rank** these words by decreasing **probability of being the correct one**
@@ -436,7 +427,7 @@ Strategy for non-word errors:
 
 <br>
 
-$^1$ delete, add, replace 1 character, transpose 2 successive characters. $\tt{where} \rightarrow$ $\tt{were}, \tt{there}, \tt{here}, \tt{wheer}$ 
+$^1$ delete, add, replace 1 character, transpose 2 successive characters. $\tt{where} \rightarrow$ $\tt{were}, \tt{there}, \tt{here}, \tt{wheer}$ . See Ch. 2, sect. 2.5 of Juravsky's book.
 
 ---
 
@@ -446,9 +437,10 @@ Strategy for real-word errors:
 - for each typed *sentence* $X$
   - assume there is 0 or only 1 misspelled word
   - for each of its words find words in the vocabulary at distance $\leq 1$
-  - make all possible sentences in this way, $C(X)$
+  - make all possible sentences in this way, $C(X)$, where $X \in C(X)$
   - rank these sentences by decreasing **probability of being the correct one**
-  - select $W \in C(X)$ such that $P(W | X) - P(X | X) \geq \text{\tt{threshold}}$
+  - select $W \in C(X)$ such that $P(W | X) - P(X | X) \geq \text{\tt{threshold}}$,
+  (or better, $\log P(W | X) - \log P(X | X) \geq \text{\tt{threshold}}$)
   - show list and let the user choose
 
 ---
@@ -486,11 +478,11 @@ I	wish	you	where	where 	3.582113019433922e-14
 
 How to compute the probabilities ? Using the **noisy-channel model** (at sentence level)
 
-![height:120](channel_noise.drawio.png)
+![height:220](channel_noise.drawio.png)
 
-$X = x_1x_2\ldots x_n$ typed sentence (correct or no)
-$C(X)$ set of candidate sentences to correct sentence $= X$ plus sentences with 1 word changed to another real-word at Levenshtein distance 1 
 $W = w_1w_2\ldots w_n$ correct sentence
+$X = x_1x_2\ldots x_n$ typed sentence (correct or no)
+$C(X)$ set of candidate sentences to correct sentence $= X$ plus sentences with $1$ word changed to another real-word at Levenshtein distance $1$ 
 
 <br>
 
@@ -540,7 +532,7 @@ $$p(x | w) = \left\{
   \begin{array}{l}
   \alpha \;\;\; \text{if} \;\; w = x, \; \text{for instance} \;\; 0.95 \\
   \\
-  \displaystyle\frac{1 - \alpha}{|C(x)| - 1}\;\;\; \text{if} \;\; \red{w} \in C(x) \;\;\text{but}\; x \neq w \\
+  \displaystyle\frac{1 - \alpha}{|C(x)| \red{- 1}}\;\;\; \text{if} \;\; \red{w} \in C(x) \;\;\text{but}\; x \neq w \\
   \\
   0 \;\;\; \text{else}
   \end{array} \right.
@@ -590,3 +582,17 @@ $$\text{\tt{I wish you \red{where} here}}$$
 To rank the list of real words close to the misspelled one, use the probabilities of the $n$-gram and / or neural LM and Bayes.
 
 Link to [Google Colab notebook](https://colab.research.google.com/drive/1QJDZrt-kAy5mDA24pa7BH1-_W2_yclpv?usp=sharing)
+
+---
+
+Recap
+===
+
+- a LM is a way to compute the **probability of a sequence of words**, or the **conditional probability of a word** given preceeding words
+- useful for a number of **applications**
+- with **n-grams** we can easily build a simple LM
+- the choice of $n$ matters
+- **zeros problem** solved with **Laplace smoothing** or **backoff**
+- can also build a LM with a simple **feed-forward neural network**, avoiding the zeros problem
+- these LMs can not compete with present day LMs like GPT, they are 20 years older!
+- but simple and still useful to implement a spell checker
