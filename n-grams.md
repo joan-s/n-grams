@@ -136,7 +136,7 @@ $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text
 
   <br>
 
-  $x \sim P(x)$ means aleatory variable $x$ follows distribution $P(x)$
+  $x \sim P(x)$ means random variable $x$ follows distribution $P(x)$
 
 ---
 
@@ -151,7 +151,7 @@ Naive solution:
 1. divide by total number of sequences of length $n$ in the corpus
 
 **Problems**:
-- maybe $w_1 w_2 \ldots w_n$ doesn't exist in the corpus, almost surely if $n$ large
+- maybe $w_1 w_2 \ldots w_k$ doesn't exist in the corpus, almost surely if $k$ large
 - even if it exists, the corpus may not be large enough $\rightarrow$ probability not reliable
 
 ---
@@ -265,8 +265,8 @@ $n$-grams was one of the first takes of statistical NLP at building language mod
 - 2012$-$ computer vision taken by storm by deep learning $\rightarrow$ NLP
 - 2017$-$ attention models, transformer architectures which perform MUCH better
 
-**Read [this ![height:50](towards_data_science.png)](https://devopedia.org/n-gram-model#milestones
-) and [this ![](devopedia.png)](https://towardsdatascience.com/evolution-of-language-models-n-grams-word-embeddings-attention-transformers-a688151825d2)**.
+<span style="color:green">Read this [![height:50](towards_data_science.png)](https://devopedia.org/n-gram-model#milestones
+) and this [![](devopedia.png)](https://towardsdatascience.com/evolution-of-language-models-n-grams-word-embeddings-attention-transformers-a688151825d2)</span>.
 
 ---
 
@@ -293,9 +293,9 @@ Problems and solutions
 
 - The training corpus may be large but at test time there may always be new words
 - How to compute probabilities then ?
-- Replace the less frequent words in the vocabulary by the ``UNK`` word
-- any word not in the training vocabulary is ``UNK``
-- estimate probabilities involving ``UNK`` considering it just like any other regular word
+- Replace the less frequent words in the vocabulary by the  $\text{\tt{<UNK>}}$ word
+- any word not in the training vocabulary is $\text{\tt{<UNK>}}$
+- estimate probabilities involving $\text{\tt{<UNK>}}$ considering it just like any other regular word
 
 ---
 
@@ -317,7 +317,7 @@ credits: Jurafsky
 The problem of large $n$ is 
 
 - ratio of actual vs possible $n$-grams tends to zero : $3e5$ found 4-grams vs $V^4 = 7e17$ possible 4-grams
-- *It can not be but* $\rightarrow$  *that* | *I* | *he* | *thou* | *so*
+- $\text{\tt{It can not be but}}$ $\rightarrow$  $\text{\tt{ that | I | he | thou | so}}$
 - for most 4-grams there is only 1 continuation possible
 - generated text is *literally* Shakespeare
 
@@ -367,7 +367,7 @@ $$|V| \; \text{size of the vocabulary}$$
 
 If there are not bigrams $w_{k-1} w_k$, resort to $P(w_k)$
 
-$P(w_k) > 0$ because $w_k$ is a known word or ``<UNK>``
+$P(w_k) > 0$ because $w_k$ is a known word or $\text{\tt{<UNK>}}$
 
 ---
 
@@ -631,13 +631,15 @@ A (discrete) random variable $X$ is an application $X:\Omega \rightarrow \R$ so 
 
 - experiment : throw a dice *once*
 - $\Omega = \{1,2,3,4,5,6\}$
-- $\mathcal{A} = \{ \emptyset, \{1\} \dots \{6\}, \{1,2\}, \{5,6\}, \{2,4,6\}, \ldots \Omega \}$
+- $\mathcal{A} = \{ \emptyset, \{1\}, \dots \{6\}, \{1,2\}, \ldots \{5,6\}, \{1,2,3\}, \ldots \Omega \}$
 - $P(\{3\}) = 1/6, P(\{1,2,3\}) = 1/2, P(\emptyset) = 0, P(\Omega) = 1 \; \ldots$
-- $X(\{1\}) = 3, X(\{2\}) = X(\{4\}) = 1, X(\{3\}) = X(\{5\}) = -1, X(\{6\}) = 2$, what is $P(X > 1.5)$ ? 
+- $X$ is Euros you win or loose : $X(\{1\}) = -3$, $X(\{2\}) = X(\{4\}) = 1$,
+  $X(\{3\}) = X(\{5\}) = -1$, $X(\{6\}) = 2$, 
+  what is $P(X > 1.5)$ ? 
 
 ---
 
-**Conditional probability** : $A, B \in \mathcal{A}$ (events), $P(A)>0$, then 
+**Conditional probability** : $A, B \in \mathcal{A}$ (events), $P(B)>0$, then 
 
 $$P(A | B) = \displaystyle\frac{P(A \cap B)}{P(B)}$$
 
