@@ -33,7 +33,6 @@ Outline
 
 1. Language model : what is and why do we want it
 1. $n$-grams for LM
-1. Evaluation of LM : perplexity
 1. Problems and solutions
     - sparsity, unknown words
     - smoothing and backoff
@@ -81,6 +80,9 @@ $$P(\text{{\tt like}} ~|~ \text{{\tt How's the weather}}) = 0.8$$
 which means also the most probable word in the vocabulary $V$ after a sequence
 
 $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text{{\tt like}}$$
+
+
+[Appendix: meaning of conditional probs.](#45)
 
 ---
 
@@ -505,6 +507,8 @@ $$\hat W = \argmax_{W \; \in \; C(X)} \; P(W | X) = \argmax_{W \; \in \; C(X)} \
 - $P(W)$ prior
 - $P(X)$ evidence, doesn't matter because we optimize with respect to $W$
 
+[Appendix: meaning of conditional probs.](#47)
+
 ---
 
 How to compute $P(W)$ ? Using a $n$-gram language model
@@ -596,3 +600,57 @@ Recap
 - can also build a LM with a simple **feed-forward neural network**, avoiding the zeros problem
 - these LMs can not compete with present day LMs like GPT, they are 20 years older!
 - but simple and still useful to implement a spell checker
+
+---
+<a name="condprobs"></a>
+
+## Appendix: conditional probabilities and Bayes in a nutshell
+
+A probability space is $(\Omega, \mathcal{A}, P)$ with
+- $\Omega$ sampling space, set of possible outcomes of a random experiment
+- $\mathcal{A}$ $\sigma$-algebra on $\Omega$, for instance set of possible subsets of $\Omega$, $\mathcal{P}(\Omega)$ "parts of $\Omega$"
+- $P$ function that assigns a probability measure in $[0,1]$ to an element of $\mathcal{A}$
+
+<br>
+
+A (discrete) random variable $X$ is an application $X:\Omega \rightarrow \R$ so that we can write something like $P(X\leq a), P(X=b), P(a < X \leq b), \; a,b \in \R$
+
+---
+
+![height:200](dice.jpeg)
+
+- experiment : throw a dice *once*
+- $\Omega = \{1,2,3,4,5,6\}$
+- $\mathcal{A} = \{ \emptyset, \{1\} \dots \{6\}, \{1,2\}, \{5,6\}, \{2,4,6\}, \ldots \Omega \}$
+- $P(\{3\}) = 1/6, P(\{1,2,3\}) = 1/2, P(\emptyset) = 0, P(\Omega) = 1 \; \ldots$
+- $X(\{1\}) = 3, X(\{2\}) = X(\{4\}) = 1, X(\{3\}) = X(\{5\}) = -1, X(\{6\}) = 2$,
+  what is $P(X > 1.5)$ ? 
+
+---
+
+Definition: $A, B \in \mathcal{A}$ (events), $P(A)>0$, then 
+
+$$P(A | B) = \displaystyle\frac{P(A \cap B)}{P(B)}$$
+
+Meaning: probability of $A$ if we know $B$ has occurred or is true.
+
+$$P(2 \; | \; \text{outcome is even}) = \displaystyle\frac{1/6}{1/2} = 1/3$$
+
+**Bayes theorem** or conditioning reversal:
+$$P(B | A) = \displaystyle\frac{P(A \, | \, B) \; P(B)}{P(A)}$$
+
+and similarly with random variables $X, Y$.
+
+---
+
+![height:600](problem_bayes.png)
+
+*Information Theory, Inference, and Learning Algorithms*. David J.C. MacKay, Cambridge University Press 2003. [book in pdf](https://www.inference.org.uk/mackay/itila/book.html)
+
+---
+
+![height:600](solution1_bayes.png)
+
+---
+
+![height:600](solution2_bayes.png)
