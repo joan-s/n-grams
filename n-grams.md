@@ -22,9 +22,9 @@ References
 
 *Speech and Language Processing*. 3rd ed. draft Jan 2023. Dan Jurafsky, James H. Martin. https://web.stanford.edu/~jurafsky/slp3/.
 
-- Chapter 3 : *N-gram language models*
-- Chapter 7 : *Neural language models*, only sections 7.3, 7.5 and 7.6.1
-- Appendix B : *Spelling correction and the noisy channel*
+- Chapter 3 : [*N-gram language models*](https://web.stanford.edu/~jurafsky/slp3/3.pdf)
+- Chapter 7 : [*Neural language models*](https://web.stanford.edu/~jurafsky/slp3/7.pdf), only sections 7.3, 7.5 and 7.6.1
+- Appendix B : [*Spelling correction and the noisy channel*](https://web.stanford.edu/~jurafsky/slp3/B.pdf)
 
 ---
 
@@ -53,10 +53,20 @@ Plan
 
 ---
 
-"real-words" spelling correction
+Text generation
+
+>$\text{\tt{<s>}}$ El $\rightarrow$ 
+
+> El Girona Convention Bureau facilitarà , a través del bucle repetint successivament el mateix col·lapse que es fa una reivindicació al reconeixement social i l' evolució geològica
+
+
+---
+
+"Real-words" spelling correction
 
   >Emma Woodhouse, <font color="red">hand some</font>, clever, and rich, with a comfortable home <font color="red">an</font> happy disposition, seemed to <font color="red">unit</font> some of the best blessings of existence; and 
-  <font color="red">hat</font> lived nearly twenty-one years in the world with very little <font color="red">too</font> distress or vex her. 
+  <font color="red">hat</font> lived nearly twenty-one years in the world with very little <font color="red">too</font> distress or vex 
+  her. 
 
   >Emma Woodhouse, <font color="blue">handsome</font>, clever, and rich, with a comfortable home <font color="blue">and</font> happy disposition, seemed to <font color="blue">unite</font> some of the best blessings of existence; and <font color="blue">had</font> lived nearly twenty-one years in the world with very little <font color="blue">to</font> distress or vex 
   her. 
@@ -82,7 +92,7 @@ which means also the most probable word in the vocabulary $V$ after a sequence
 $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text{{\tt like}}$$
 
 
-[Appendix: meaning of conditional probs.](#45)
+[Appendix: meaning of conditional probs.](#46)
 
 ---
 
@@ -161,7 +171,7 @@ If $n=2$, only previous word matters:
 $$P(w_1, w_2 \ldots w_k) = P(w_1)\,P(w_2|w_1)\,P(w_3|w_2) \ldots P(w_k | w_{k-1})$$
 
 
-<span style="color:blue">Do you think the approximation is reasonable ? Which is the best $n$ ?</span>
+<span style="color:green">Do you think the approximation is reasonable ? Which is the best $n$ ?</span>
 
 ---
 
@@ -201,7 +211,7 @@ Why is this better ? It's much more probable than we can find all the $w_{k-1} w
 
 <br>
 
-<span style="color:blue">Write the equations for $n=3$ and for the general case $n \geq 2$</span>
+<span style="color:green">Write the equations for $n=3$ and for the general case $n \geq 2$</span>
 
 ---
 
@@ -227,7 +237,7 @@ Caution: $C(w)$ is *not* the number of unigrams = occurrences of $w$ but the num
 
 ### Practical issues
 
-- In practice it's better to use trigrams, 4-grams than bigrams. <span style="color:blue">Why ?</span>
+- In practice it's better to use trigrams, 4-grams than bigrams. <span style="color:green">Why ?</span>
 
 - For trigrams you need to do like $P(\text{{\tt restaurant}} \,|\, \text{{\tt <s><s>}})$ = probability that $\tt{restaurant}$ is first word of a sentence, etc.
 
@@ -241,7 +251,7 @@ Caution: $C(w)$ is *not* the number of unigrams = occurrences of $w$ but the num
 
 <br>
 
-<span style="color:blue">Compute $P(\text{{\tt una bella}})$ in the text above</span>
+<span style="color:green">Compute $P(\text{{\tt una bella}})$ in the text above</span>
 
 ---
 
@@ -300,7 +310,7 @@ Problems and solutions
 ![height:450](shakespeare.png)
 
 <br><br>
-credits: Juravsky
+credits: Jurafsky
 
 ---
 
@@ -405,7 +415,8 @@ Frequency of spelling errors vary
 
 - **Non-word spelling correction** : errors that result in non-words, not in the vocabulary
 
-  >Emma Woodhouse, <font color="red">hansome</font>, clever, and rich, with a <font color="red">confortable</font> home and happy disposition, seemed to unite some of the best <font color="red">blesings</font> of existence; and had lived nearly twenty-one years in the world with very little to <font color="red">distres</font> or vex her. 
+  >Emma Woodhouse, <font color="red">hansome</font>, clever, and rich, with a <font color="red">confortable</font> home and happy disposition, seemed to unite some of the best <font color="red">blesings</font> of existence; and had lived nearly twenty-one years in the world with very little to <font color="red">distres</font> 
+  or vex her. 
   **Emma, Jane Austin**
 
 ---
@@ -429,7 +440,7 @@ Strategy for non-word errors:
 
 <br>
 
-$^1$ delete, add, replace 1 character, transpose 2 successive characters. $\tt{where} \rightarrow$ $\tt{were}, \tt{there}, \tt{here}, \tt{wheer}$ . See Ch. 2, sect. 2.5 of Juravsky's book.
+$^1$ delete, add, replace 1 character, transpose 2 successive characters. $\tt{where} \rightarrow$ $\tt{were}, \tt{there}, \tt{here}, \tt{wheer}$ . See Ch. 2, sect. 2.5 of Jurafsky's book.
 
 ---
 
@@ -507,7 +518,7 @@ $$\hat W = \argmax_{W \; \in \; C(X)} \; P(W | X) = \argmax_{W \; \in \; C(X)} \
 - $P(W)$ prior
 - $P(X)$ evidence, doesn't matter because we optimize with respect to $W$
 
-[Appendix: meaning of conditional probs.](#47)
+[Appendix: Bayes theorem](#48)
 
 ---
 
@@ -602,7 +613,6 @@ Recap
 - but simple and still useful to implement a spell checker
 
 ---
-<a name="condprobs"></a>
 
 ## Appendix: conditional probabilities and Bayes in a nutshell
 
@@ -623,12 +633,11 @@ A (discrete) random variable $X$ is an application $X:\Omega \rightarrow \R$ so 
 - $\Omega = \{1,2,3,4,5,6\}$
 - $\mathcal{A} = \{ \emptyset, \{1\} \dots \{6\}, \{1,2\}, \{5,6\}, \{2,4,6\}, \ldots \Omega \}$
 - $P(\{3\}) = 1/6, P(\{1,2,3\}) = 1/2, P(\emptyset) = 0, P(\Omega) = 1 \; \ldots$
-- $X(\{1\}) = 3, X(\{2\}) = X(\{4\}) = 1, X(\{3\}) = X(\{5\}) = -1, X(\{6\}) = 2$,
-  what is $P(X > 1.5)$ ? 
+- $X(\{1\}) = 3, X(\{2\}) = X(\{4\}) = 1, X(\{3\}) = X(\{5\}) = -1, X(\{6\}) = 2$, what is $P(X > 1.5)$ ? 
 
 ---
 
-Definition: $A, B \in \mathcal{A}$ (events), $P(A)>0$, then 
+**Conditional probability** : $A, B \in \mathcal{A}$ (events), $P(A)>0$, then 
 
 $$P(A | B) = \displaystyle\frac{P(A \cap B)}{P(B)}$$
 
@@ -645,7 +654,7 @@ and similarly with random variables $X, Y$.
 
 ![height:600](problem_bayes.png)
 
-*Information Theory, Inference, and Learning Algorithms*. David J.C. MacKay, Cambridge University Press 2003. [book in pdf](https://www.inference.org.uk/mackay/itila/book.html)
+*Information Theory, Inference, and Learning Algorithms*. David J.C. MacKay, Cambridge University Press 2003. [book online](https://www.inference.org.uk/mackay/itila/book.html)
 
 ---
 
