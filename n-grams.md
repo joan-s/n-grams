@@ -1,8 +1,9 @@
 ---
 marp: true
-theme: default
+theme: defaults
 size: 16:9
 paginate: true
+math: katex
 ---
 
 Language modelling with n-grams
@@ -92,7 +93,7 @@ which means also the most probable word in the vocabulary $V$ after a sequence
 $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text{{\tt like}}$$
 
 
-[Appendix: meaning of conditional probs.](#46)
+[Appendix: meaning of conditional probs.](#50)
 
 ---
 
@@ -125,7 +126,7 @@ $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text
   ![height:400](whatsapp.png)
 
 
-  Sort by $w \in V$ descending $P(w \; | \; \text{\tt meet you at the})$ and show top-3 words
+  Sort $w \in V$ by decreasing $P(w \; | \; \text{\tt meet you at the})$ and show top-3 words
 
 ---
 
@@ -392,11 +393,117 @@ $S$ and not $P$ because again does not produce a probability distribution, but w
 Feed forward neural LM
 ===
 
-![](nlm1.png)
+*Feed-forward neural network* : Connections between the nodes do not form a cycle. Information always moves one direction, never goes backwards. 
+A multilayer perceptron (MLP) is a type of FFNN.
+
+$h_i = f(\mathbf{w \cdot x} + b_i)$, $f$ non-linearity like $\sigma, \tanh$, ReLU
+
+Equivalently, $\mathbf{h} = f(\mathbf{W x + b})$
+
+Result $\mathbf{y} = \mathbf{Uh}$
+
+![bg right:45% height:500](fig_7.8.png)
 
 ---
 
-![](nlm2.png)
+Bengio et al.$^1$ introduced the first fee-forward NN language model in 2003.
+
+Advantages over $n$-gram LM
+- can handle much longer histories (length of network input)
+- can generalize better over contexts of similar words
+- more accurate at word-prediction. 
+
+However,
+- more complex
+- need to be trained (slow, energy) 
+- lack explainability of $n$-grams LM (counting, probs.)
+
+<br>
+
+$^1$[A neural probabilistic language model](https://www.jmlr.org/papers/volume3/bengio03a/bengio03a.pdf). Bengio, Y., R. Ducharme, P. Vincent, and C. Jauvin. *Journal of Machine Learning Research*, 2003.
+
+---
+
+How's the feed-forward NN for language modeling ?
+
+- input to NN is a sequence of words $\text{\tt{['<s>', 'El', 'dia', 'que']}}$
+- each word is coded as a one-hot vector, equivalently, an id number
+  $$\text{\tt El} \rightarrow w = [0,0,0,0,1,0, \ldots 0], \; w \in \{0,1\}^{|V|}, \; w[5]=1, \text{id}=5$$
+- first layer of NN changes the representation : from  one-hot / id to a vector $e\in \R^d$
+- $e_5$ lives in a $d$-dimensional space, the **embedding E**
+
+  ![height:280](embedding.png)
+
+---
+
+- the embeddings of the 4 input words are concatenated in a single vector $x \in \R^{4d}$
+- next comes a pair of fully connected layers
+  $$\begin{array}{l}
+    y_1  = \tanh(\mathbf{W}x + b_1) \\
+    y_2 = \mathbf{U} y_1 + x + b_2
+    \end{array}
+  $$
+- output scores $y_2$ are passed through a softmax normalization to the probability $p(w \; | \; \text{\tt{['<s>', 'El', 'dia', 'que']}})$ for each word $w \ in V$
+
+<br>
+
+For details on how to **train** the nework and the loss function (cross-entropy), see Sect. 7.6 of Jurafsky book.
+
+---
+
+![height:700](nlm1.png)
+
+---
+
+In Pytorch:
+
+```python
+class NNLM(nn.Module):
+  def __init__(self, num_classes, dim_input, dim_hidden, dim_embedding):
+    super(NNLM, self).__init__()
+    self.dim_input = dim_input
+    self.dim_embedding = dim_embedding
+    self.embeddings = nn.Embedding(num_classes, self.dim_embedding)
+    self.hidden1 = nn.Linear(self.dim_input * self.dim_embedding, 
+                             dim_hidden, bias=False)
+    self.bias1 = nn.Parameter(torch.ones(dim_hidden)) # initialized to 1      
+    self.hidden2 = nn.Linear(dim_hidden, num_classes, bias=False)
+    self.hidden3 = nn.Linear(self.dim_input * self.dim_embedding, 
+                             num_classes, bias=False)
+    self.bias2 = nn.Parameter(torch.ones(num_classes)) # initialized to 1
+
+  def forward(self, X):
+    word_embeds = self.embeddings(X)
+    X = word_embeds.view(-1, self.dim_input * self.dim_embedding) # concatenate
+    tanh = torch.tanh(self.bias1 + self.hidden1(X))
+    output = self.bias2 + self.hidden3(X) + self.hidden2(tanh)
+    return output
+```
+
+---
+
+```python
+model = NNLM(num_classes=dataset.vocabulary_size, dim_input=4, 
+             dim_hidden=32, dim_embedding=50)
+generated_words = ['<s>', 'El', 'dia', 'que']
+
+while len(generated_words) < 100:
+  input_ids = [dataset.word2id[w] for w in generated_words[-dim_input:]]
+  # select last dim_input words
+
+  pred = model(torch.tensor(input_ids).unsqueeze(0))
+  probs = torch.nn.functional.softmax(pred, dim=1)
+  output_id = torch.multinomial(probs,1)
+  # sample {0...num_classes-1} according to probabilities
+  
+  output_word = dataset.id2word[output_id.item()]
+  generated_words += [output_word]
+```
+
+---
+
+![height:550](nlm2.png)
+
 
 ---
 
@@ -614,7 +721,8 @@ Recap
 
 ---
 
-## Appendix: conditional probabilities and Bayes in a nutshell
+Appendix: conditional probabilities and Bayes
+===
 
 A probability space is $(\Omega, \mathcal{A}, P)$ with
 - $\Omega$ sampling space, set of possible outcomes of a random experiment
@@ -639,13 +747,20 @@ A (discrete) random variable $X$ is an application $X:\Omega \rightarrow \R$ so 
 
 ---
 
-**Conditional probability** : $A, B \in \mathcal{A}$ (events), $P(B)>0$, then 
+**Conditional probability** : $A, B \in \mathcal{A}$ (events), if $P(B)>0$, then 
 
 $$P(A | B) = \displaystyle\frac{P(A \cap B)}{P(B)}$$
 
+<br>
+
 Meaning: probability of $A$ if we know $B$ has occurred or is true.
 
-$$P(2 \; | \; \text{outcome is even}) = \displaystyle\frac{1/6}{1/2} = 1/3$$
+$$P(1 \text{ or } 2 \; | \; \text{outcome is even}) = \displaystyle\frac{1/6}{1/2} = 1/3$$
+
+
+![bg right:50% height:400](conditional_probs.drawio.png)
+
+---
 
 **Bayes theorem** or conditioning reversal:
 $$P(B | A) = \displaystyle\frac{P(A \, | \, B) \; P(B)}{P(A)}$$
