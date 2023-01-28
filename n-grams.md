@@ -436,6 +436,24 @@ How's the feed-forward NN for language modeling ?
 
 ---
 
+The embedding is key: it is initialized at random but later **learned** during training. It learns which words go with each other words in the training set = small Euclidean distance.
+
+> Using embeddings allows neural language models to generalize better to unseen
+data. For example, suppose we’ve seen this sentence in training: 
+``I have to make sure that the cat gets fed`` 
+but have never seen the words “gets fed” after the word ``dog``. Our test set has the prefix ``I forgot to make sure that the dog gets``. What’s the next word? <br>
+An n-gram language model will predict ``fed`` after ``that the cat gets``, but not after ``that the dog gets``. But a neural LM, __knowing that ``cat`` and ``dog`` have similar embeddings__, will be able to generalize from the ``cat`` context to __assign a high enough probability to ``fed`` even after seeing ``dog``__.
+
+---
+
+Projection of $d$-dimensional embedding to 2d using [t-SNE](https://scikit-learn.org/stable/modules/generated/sklearn.manifold.TSNE.html), 
+
+
+![height:500](view_embedding.png)
+https://neptune.ai/blog/word-embeddings-guide
+
+---
+
 - the embeddings of the 4 input words are concatenated in a single vector $x \in \R^{4d}$
 - next comes a pair of fully connected layers
   $$\begin{array}{l}
