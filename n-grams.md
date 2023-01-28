@@ -93,7 +93,7 @@ which means also the most probable word in the vocabulary $V$ after a sequence
 $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text{{\tt like}}$$
 
 
-[Appendix: meaning of conditional probs.](#50)
+[Appendix: meaning of conditional probs.](#52)
 
 ---
 
@@ -443,11 +443,11 @@ How's the feed-forward NN for language modeling ?
     y_2 = \mathbf{U} y_1 + x + b_2
     \end{array}
   $$
-- output scores $y_2$ are passed through a softmax normalization to the probability $p(w \; | \; \text{\tt{['<s>', 'El', 'dia', 'que']}})$ for each word $w \ in V$
+- output scores $y_2$ are passed through a softmax normalization to the probability $p(w \; | \; \text{\tt{['<s>', 'El', 'dia', 'que']}})$ for each word $w \in V$
 
 <br>
 
-For details on how to **train** the nework and the loss function (cross-entropy), see Sect. 7.6 of Jurafsky book.
+For details on how to **train** the nework and the loss function (cross-entropy), see Sect. 7.6 of Jurafsky book and [exercise 2](#49).
 
 ---
 
@@ -625,7 +625,7 @@ $$\hat W = \argmax_{W \; \in \; C(X)} \; P(W | X) = \argmax_{W \; \in \; C(X)} \
 - $P(W)$ prior
 - $P(X)$ evidence, doesn't matter because we optimize with respect to $W$
 
-[Appendix: Bayes theorem](#48)
+[Appendix: Bayes theorem](#55)
 
 ---
 
