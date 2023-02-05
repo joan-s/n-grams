@@ -93,7 +93,7 @@ which means also the most probable word in the vocabulary $V$ after a sequence
 $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text{{\tt like}}$$
 
 
-[Appendix: meaning of conditional probs.](#52)
+[Appendix: meaning of conditional probs.](#55)
 
 ---
 
@@ -138,6 +138,33 @@ $$\underset{w \in V}{\argmax} \; P(w ~|~ \text{{\tt How's the weather}}) = \text
   <br>
 
   $x \sim P(x)$ means random variable $x$ follows distribution $P(x)$
+
+---
+
+What's the difference ?
+
+Suppose there are only 5 possible continuations :
+
+$$
+P(
+\begin{array}{l}
+\tt{airport} \\
+\tt{caffe} \\
+\tt{office} \\
+\tt{end} \\
+\tt{stairs}
+\end{array}
+\; | \; \text{\tt{meet you at the}} \; ) =
+\begin{array}{l}
+0.4 \\
+0.3 \\
+0.2 \\
+0.05 \\
+0.05
+\end{array}
+$$
+
+When generating text, with $\arg \max$ ${\tt airport}$ will *always* be next word. With $\text{Sample}$ only 4 every 10 times, $\tt{caffe}$ 3 out of 10 times etc. : generated text will be more varied.
 
 ---
 
@@ -310,9 +337,6 @@ Problems and solutions
 
 ![height:450](shakespeare.png)
 
-<br><br>
-credits: Jurafsky
-
 ---
 
 The problem of large $n$ is 
@@ -465,7 +489,7 @@ https://neptune.ai/blog/word-embeddings-guide
 
 <br>
 
-For details on how to **train** the nework and the loss function (cross-entropy), see Sect. 7.6 of Jurafsky book and [exercise 2](#49).
+For details on how to **train** the nework and the loss function (cross-entropy), see Sect. 7.6 of Jurafsky book and [exercise part 2](#52).
 
 ---
 
@@ -572,14 +596,16 @@ $^1$ delete, add, replace 1 character, transpose 2 successive characters. $\tt{w
 Strategy for real-word errors:
 
 - more difficult because *any* word can be an error
-- for each typed *sentence* $X$
-  - assume there is 0 or only 1 misspelled word
+- **for each typed *sentence*** $X$
+  - **assume there is 0 or only 1 misspelled word**
   - for each of its words find words in the vocabulary at distance $\leq 1$
-  - make all possible sentences in this way, $C(X)$, where $X \in C(X)$
+  - **because we assume the right word is one of these**
+  - make all possible sentences in this way, $C(X)$, where $X \in C(X)$ also
   - rank these sentences by decreasing **probability of being the correct one**
-  - select $W \in C(X)$ such that $P(W | X) - P(X | X) \geq \text{\tt{threshold}}$,
+  - if the list is too long, select the top $t$ sentences
+  - or select $W \in C(X)$ such that $P(W | X) - P(X | X) \geq \text{\tt{threshold}}$,
   (or better, $\log P(W | X) - \log P(X | X) \geq \text{\tt{threshold}}$)
-  - show list and let the user choose
+  - show the list and let the user choose
 
 ---
 
@@ -643,7 +669,7 @@ $$\hat W = \argmax_{W \; \in \; C(X)} \; P(W | X) = \argmax_{W \; \in \; C(X)} \
 - $P(W)$ prior
 - $P(X)$ evidence, doesn't matter because we optimize with respect to $W$
 
-[Appendix: Bayes theorem](#55)
+[Appendix: Bayes theorem](#58)
 
 ---
 
@@ -680,8 +706,10 @@ $$
 
 ---
 
-Exercise 1 : Sample a $n$-gram LM
+Exercise part 1
 ===
+
+Generate text with a $n$-gram LM
 
 1. Download a corpus in Catalan, Spanish or English
 1. Process to extract tokens, sentences
@@ -694,10 +722,11 @@ Link to [Google Colab notebook](https://colab.research.google.com/drive/17U8E4HR
 
 ---
 
-Exercise 2
+Exercise part 2
 ===
 
-Compare a $n$-grams LM with the feed-forward LM
+Generate text with a feed-forward LM
+
 1. Load the ``cess_cat`` corpus, already tokenized and segmented in sentences.
 1. Add ``<s>``, ``</s>``
 1. Make a Pytorch ``Dataset`` that returns batches of $n$-grams
@@ -710,7 +739,7 @@ Link to [Google Colab notebook](https://colab.research.google.com/drive/1skhaGGM
 
 ---
 
-Exercise 3
+Exercise part 3
 ===
 
 Build a spell corrector based on a LM. For the sake of simplicity we'll only consider the *real word* part. 
@@ -759,9 +788,8 @@ A (discrete) random variable $X$ is an application $X:\Omega \rightarrow \R$ so 
 - $\Omega = \{1,2,3,4,5,6\}$
 - $\mathcal{A} = \{ \emptyset, \{1\}, \dots \{6\}, \{1,2\}, \ldots \{5,6\}, \{1,2,3\}, \ldots \Omega \}$
 - $P(\{3\}) = 1/6, P(\{1,2,3\}) = 1/2, P(\emptyset) = 0, P(\Omega) = 1 \; \ldots$
-- $X$ is Euros you win or loose : $X(\{1\}) = -3$, $X(\{2\}) = X(\{4\}) = 1$,
-  $X(\{3\}) = X(\{5\}) = -1$, $X(\{6\}) = 2$, 
-  what is $P(X > 1.5)$ ? 
+- $X$ is Euros you win or loose : $X(1) = -3$, $X(2) = X(4) = 1$,
+  $X(3) = X(5) = -1$, $X(6) = 2$, what is $P(X > 1.5)$ ? 
 
 ---
 
@@ -787,14 +815,14 @@ and similarly with random variables $X, Y$.
 
 ---
 
-![height:600](problem_bayes.png)
+![height:550](problem_bayes.png)
 
 *Information Theory, Inference, and Learning Algorithms*. David J.C. MacKay, Cambridge University Press 2003. [book online](https://www.inference.org.uk/mackay/itila/book.html)
 
 ---
 
-![height:600](solution1_bayes.png)
+![height:570](solution1_bayes.png)
 
 ---
 
-![height:600](solution2_bayes.png)
+![height:550](solution2_bayes.png)
