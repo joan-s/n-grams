@@ -6,7 +6,7 @@ paginate: true
 math: katex
 ---
 
-Language modelling with n-grams
+Language modelling
 ===
 
 ![bg right:65%](wordnet.png)
@@ -54,7 +54,7 @@ Plan
 
 ---
 
-Text generation
+Text generation ?
 
 >$\text{\tt{<s>}}$ El $\rightarrow$ 
 
@@ -63,7 +63,7 @@ Text generation
 
 ---
 
-"Real-words" spelling correction
+Real-words spelling correction ?
 
   >Emma Woodhouse, <font color="red">hand some</font>, clever, and rich, with a comfortable home <font color="red">an</font> happy disposition, seemed to <font color="red">unit</font> some of the best blessings of existence; and 
   <font color="red">hat</font> lived nearly twenty-one years in the world with very little <font color="red">too</font> distress or vex 
@@ -164,7 +164,7 @@ P(
 \end{array}
 $$
 
-When generating text, with $\arg \max$ ${\tt airport}$ will *always* be next word. With $\text{Sample}$ only 4 every 10 times, $\tt{caffe}$ 3 out of 10 times etc. : generated text will be more varied.
+When generating text, with $\arg \max$ ${\tt airport}$ will *always* be next word. With $\text{Sample}$ only 4 out of 10 times, $\tt{caffe}$ 3 out of 10 times etc. : generated text will be more varied.
 
 ---
 
@@ -176,7 +176,7 @@ Naive solution:
 
 1. take a large corpus
 1. count occurrences of our sequence, $C(w_1 w_2 \ldots w_k)$
-1. divide by total number of sequences of length $n$ in the corpus
+1. divide by total number of sequences of length $k$ in the corpus
 
 **Problems**:
 - maybe $w_1 w_2 \ldots w_k$ doesn't exist in the corpus, almost surely if $k$ large
@@ -192,14 +192,14 @@ $$\begin{aligned}
   \end{aligned}
 $$
 
-Markov assumption: conditional probabilities depend only on the $n+1$ past words
-$$P(w_k | w_1 \ldots w_{k-1}) = P(w_k | w_{k-1} \ldots w_{k-n+1})$$
+Markov assumption: conditional probabilities depend only on the $l$ past words
+$$P(w_k | w_1 \ldots w_{k-1}) = P(w_k | w_{k-1} \ldots w_{k-l})$$
 
-If $n=2$, only previous word matters: 
+If $l=1$, only previous word matters: 
 $$P(w_1, w_2 \ldots w_k) = P(w_1)\,P(w_2|w_1)\,P(w_3|w_2) \ldots P(w_k | w_{k-1})$$
 
 
-<span style="color:green">Do you think the approximation is reasonable ? Which is the best $n$ ?</span>
+<span style="color:green">Do you think the approximation is reasonable ? Which is the best $l$ ?</span>
 
 ---
 
@@ -232,14 +232,10 @@ $$\begin{aligned}
   \end{aligned}
 $$
 
-$S$ is total number of words in the corpus.
+$S$ is total number of words in the corpus (with repetitions)
 $V$ set of *different* words in the corpus, or vocabulary
 
 Why is this better ? It's much more probable than we can find all the $w_{k-1} w_k$ in the corpus than $w_1, \ldots w_n, n>2$.
-
-<br>
-
-<span style="color:green">Write the equations for $n=3$ and for the general case $n \geq 2$</span>
 
 ---
 
@@ -269,7 +265,7 @@ Caution: $C(w)$ is *not* the number of unigrams = occurrences of $w$ but the num
 
 - For trigrams you need to do like $P(\text{{\tt restaurant}} \,|\, \text{{\tt <s><s>}})$ = probability that $\tt{restaurant}$ is first word of a sentence, etc.
 
-- Because of possibility of underflow (large $n$, large corpus), instead of
+- Because of possibility of underflow (large $n$, rare words), instead of
 
   $$P(w_2 | w_1) \, P(w_3 | w_2) \, \ldots \, P(w_n | w_{n-1})$$
 
@@ -346,7 +342,7 @@ The problem of large $n$ is
 - for most 4-grams there is only 1 continuation possible
 - generated text is *literally* Shakespeare
 
-Probabilities are not or less reliable : the zeros problem.
+Probabilities are less or not reliable : the zeros problem.
 
 ---
 Recall : the idea of LM with $n$-grams is to compute probabilities just by **counting**. For $n=2$, bigrams
@@ -383,6 +379,11 @@ $$P(w_k | w_{k-1}) = \displaystyle\frac{C(w_{k-1} w_k)}{C(w_{k-1})} \longrightar
 
 $$|V| \; \text{size of the vocabulary}$$
 
+because this way probabilities sum to 1
+
+$$
+\displaystyle\sum_{w \in V} P(w | w_{k-1}) = \displaystyle\sum_{w \in V} \displaystyle\frac{C(w_{k-1}w) + 1}{C(w_{k-1}) + |V|} = \displaystyle\frac{|V| + C(w_{k-1})}{C(w_{k-1}) + |V|} = 1
+$$
 
 ---
 
@@ -402,11 +403,11 @@ Little problem with backoff : the algorithm does not provide a proper probabilit
 
 "Solution" : stupid backoff
 
-$$S(w_k | w_{k-N+1} \ldots w_{k-1}) = \left\{
+$$S(w_k | w_{k-N+1} \ldots w_{\red{k-1}}) = \left\{
 \begin{array}{l}
 \displaystyle\frac{C(w_{k-N+1} \ldots w_{k-1}w_k)}{C(w_{k-N+1} \ldots w_{k-1})} \, \text{if numerator} > 0\\
 \\
-\lambda \; S(w_k | w_{k-N+1} \ldots w_{k-2}) \; \text{else}
+\lambda \; S(w_k | w_{k-N+1} \ldots w_{\red{k-2}}) \; \text{else}
 \end{array}\right.
 $$
 
@@ -417,14 +418,14 @@ $S$ and not $P$ because again does not produce a probability distribution, but w
 Feed forward neural LM
 ===
 
-*Feed-forward neural network* : Connections between the nodes do not form a cycle. Information always moves one direction, never goes backwards. 
+*Feed-forward neural network* : Connections between the nodes do not form a cycle. Information always moves in one direction, never goes backwards. 
 A multilayer perceptron (MLP) is a type of FFNN.
 
-$h_i = f(\mathbf{w \cdot x} + b_i)$, $f$ non-linearity like $\sigma, \tanh$, ReLU
+$h_i = f(\mathbf{w \cdot x} + b_i)\; i=1\ldots n_1$, $f$ non-linearity like $\sigma, \tanh$, ReLU
 
 Equivalently, $\mathbf{h} = f(\mathbf{W x + b})$
 
-Result $\mathbf{y} = \mathbf{Uh}$
+Result $\mathbf{y} = \mathbf{Uh}$, of length $n_2$
 
 ![bg right:45% height:500](fig_7.8.png)
 
@@ -482,7 +483,7 @@ https://neptune.ai/blog/word-embeddings-guide
 - next comes a pair of fully connected layers
   $$\begin{array}{l}
     y_1  = \tanh(\mathbf{W}x + b_1) \\
-    y_2 = \mathbf{U} y_1 + x + b_2
+    y_2 = \mathbf{U} y_1 + \mathbf{V}x + b_2
     \end{array}
   $$
 - output scores $y_2$ are passed through a softmax normalization to the probability $p(w \; | \; \text{\tt{['<s>', 'El', 'dia', 'que']}})$ for each word $w \in V$
@@ -493,7 +494,9 @@ For details on how to **train** the nework and the loss function (cross-entropy)
 
 ---
 
-![height:700](nlm1.png)
+![height:640](nlm1.png)
+
+(no $\mathbf{V}$ for simplicity)
 
 ---
 
@@ -507,11 +510,11 @@ class NNLM(nn.Module):
     self.dim_embedding = dim_embedding
     self.embeddings = nn.Embedding(num_classes, self.dim_embedding)
     self.hidden1 = nn.Linear(self.dim_input * self.dim_embedding, 
-                             dim_hidden, bias=False)
+                             dim_hidden, bias=False) # W
     self.bias1 = nn.Parameter(torch.ones(dim_hidden)) # initialized to 1      
-    self.hidden2 = nn.Linear(dim_hidden, num_classes, bias=False)
+    self.hidden2 = nn.Linear(dim_hidden, num_classes, bias=False) # U
     self.hidden3 = nn.Linear(self.dim_input * self.dim_embedding, 
-                             num_classes, bias=False)
+                             num_classes, bias=False) # V
     self.bias2 = nn.Parameter(torch.ones(num_classes)) # initialized to 1
 
   def forward(self, X):
